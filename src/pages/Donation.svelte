@@ -23,8 +23,9 @@
     console.log('Button click');
   }
 
-  async function handleForm() {
-    charity.pledged = charity.pledged + parseInt(amount);
+  async function handleForm(event) {
+    const newData = await getCharity(params.id);
+    newData.pledged = newData.pledged + parseInt(amount);
     try {
       const res = await fetch(
         `https://charity-api-bwa.herokuapp.com/charities/${params.id}`,
@@ -33,12 +34,24 @@
           headers: {
             'content-type': 'application/json',
           },
-          body: JSON.stringify(charity),
+          body: JSON.stringify(newData),
         }
       );
-      console.log(res);
-      // redirection
-      router.redirect('/success');
+      const resMid = await fetch(`/.netlify/functions/payment`, {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+        },
+        body: JSON.stringify({
+          id: params.id,
+          amount: parseInt(amount),
+          name,
+          email,
+        }),
+      });
+      const midtransData = await resMid.json();
+      console.log(midtransData);
+      window.location.href = midtransData.url;
     } catch (err) {
       console.log(err);
     }
@@ -79,7 +92,8 @@
         <p>{charity.title}</p>
         <ul class="xs-breadcumb">
           <li class="badge badge-pill badge-primary">
-            <a href="/" class="color-white">Home /</a> Donate
+            <a href="/" class="color-white">Home /</a>
+            Donate
           </li>
         </ul>
       </div>

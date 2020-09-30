@@ -16,7 +16,7 @@
     if (res.ok) {
       return data;
     } else {
-      throw Error(data);
+      throw new Error(data);
     }
   }
 </script>
